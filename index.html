@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Descontos e Bonificações</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    h2 { color: #333; }
+    .hidden { display: none; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h2>Resumo de Descontos e Bonificações</h2>
+  <div id="resultado"></div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const tecnicoParam = urlParams.get('tecnico');
+    const tecnico = tecnicoParam ? tecnicoParam.trim().toLowerCase() : '';
+
+    // Mapeamento dos técnicos para suas colunas (A-Z → 0-25)
+    const tecnicosMap = {
+      // Equipe André (colunas B a J = 1 a 9)
+      'daniel': 1, 'eduardo s': 2, 'fabior': 3, 'gui santos': 4,
+      'jose': 5, 'juliano': 6, 'pedro': 7, 'tatiane': 8, 'vinicius': 9,
+      // Equipe Walter (colunas N a V = 13 a 21)
+      'amilton': 13, 'edu n': 14, 'everton': 15, 'lisboa': 16,
+      'kaique': 17, 'matheus': 18, 'maruyama': 19, 'vitor': 20, 'wallace': 21,
+      // Equipe Peruíbe (colunas B a H da parte inferior = 1 a 7)
+      'arnaldo': 1, 'caique': 2, 'emerson': 3, 'esteban': 4,
+      'gimeno': 5, 'joão v': 6, 'marcos': 7, 'douglas': 8
+    };
+
+    const coluna = tecnicosMap[tecnico];
+
+    if (coluna === undefined) {
+      document.getElementById('resultado').innerHTML = `<p>Técnico <strong>${tecnicoParam}</strong> não encontrado.</p>`;
+    } else {
+      // ID da planilha e ID da aba
+      const sheetID = '1JkvxTOJbEe8CivitmiV8u8gIqU5YWAIL3QdP8BMqR0c';
+      const range = `apontamentos original may!A1:Z100`; // Ajuste o intervalo conforme necessário
+
+      // Chave de API
+      const apiKey = 'AIzaSyCoa7wr0MhbbM_gYZ2svKcsLY8Eq894NMw'; // Coloque sua chave de API aqui
+
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${range}?key=${apiKey}`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          const rows = data.values;
+
+          // Linhas com totais
+          const linhaDesconto = (coluna <= 9 ? 38 : coluna <= 21 ? 80 : 80);
+          const linhaBonificacao = linhaDesconto + 1;
+          const linhaResultado = linhaDesconto + 2;
+
+          const desconto = rows[linhaDesconto]?.[coluna] || 'R$0,00';
+          const bonificacao = rows[linhaBonificacao]?.[coluna] || 'R$0,00';
+          const resultado = rows[linhaResultado]?.[coluna] || 'R$0,00';
+
+          document.getElementById('resultado').innerHTML = `
+            <table>
+              <tr><th>Desconto</th><th>Bonificação</th><th>Resultado</th></tr>
+              <tr><td>${desconto}</td><td>${bonificacao}</td><td>${resultado}</td></tr>
+            </table>
+          `;
+        })
+        .catch(err => {
+          document.getElementById('resultado').innerHTML = `<p>Erro ao carregar os dados.</p>`;
+          console.error(err);
+        });
+    }
+  </script>
+</body>
+</html>
