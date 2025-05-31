@@ -36,31 +36,26 @@
     if (coluna === undefined) {
       document.getElementById('resultado').innerHTML = `<p>Técnico <strong>${tecnicoParam}</strong> não encontrado.</p>`;
     } else {
-      const sheetID = '1JkvxTOJbEe8CivitmiV8u8gIqU5YWAIL3QdP8BMqR0c';
-      const gid = '1628132343';
-      const apiKey = 'AIzaSyCV3cuHWqtsXGNnRFhAmoBMVLmcxgyKPKk';  // Sua chave de API
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/Apontamentos!A1:Z1000?key=${apiKey}`;
+      const url = `https://script.google.com/macros/s/AKfycbw9OmDVn6DjwkzXK-lWWD3uqB0f2s6oTFuY7Yk7MqeJspH73jref6oYHNvM9yo83p9V/exec?tecnico=${tecnico}`;
+
 
       fetch(url)
         .then(res => res.json())
         .then(data => {
-          const rows = data.values;
-
-          // Linhas com totais
-          const linhaDesconto = (coluna <= 9 ? 38 : coluna <= 21 ? 80 : 80);
-          const linhaBonificacao = linhaDesconto + 1;
-          const linhaResultado = linhaDesconto + 2;
-
-          const desconto = rows[linhaDesconto]?.[coluna] || 'R$0,00';
-          const bonificacao = rows[linhaBonificacao]?.[coluna] || 'R$0,00';
-          const resultado = rows[linhaResultado]?.[coluna] || 'R$0,00';
-
-          document.getElementById('resultado').innerHTML = `
-            <table>
-              <tr><th>Desconto</th><th>Bonificação</th><th>Resultado</th></tr>
-              <tr><td>${desconto}</td><td>${bonificacao}</td><td>${resultado}</td></tr>
-            </table>
-          `;
+          if (data.erro) {
+            document.getElementById('resultado').innerHTML = `<p>${data.erro}</p>`;
+          } else {
+            document.getElementById('resultado').innerHTML = `
+              <table>
+                <tr><th>Desconto</th><th>Bonificação</th><th>Resultado</th></tr>
+                <tr>
+                  <td>${data.desconto}</td>
+                  <td>${data.bonificacao}</td>
+                  <td>${data.resultado}</td>
+                </tr>
+              </table>
+            `;
+          }
         })
         .catch(err => {
           document.getElementById('resultado').innerHTML = `<p>Erro ao carregar os dados.</p>`;
@@ -70,3 +65,4 @@
   </script>
 </body>
 </html>
+
